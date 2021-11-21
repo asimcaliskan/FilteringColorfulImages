@@ -1,9 +1,6 @@
 from PIL import Image
 import numpy as np
 from os import getcwd
-from cv2 import GaussianBlur
-
-IMAGE_PATH = getcwd() + "\\src\\images\\rose.jpeg"
 
 class KuwaharaFilter:
   def __init__(self, image_path):
@@ -11,7 +8,7 @@ class KuwaharaFilter:
     self.HSV_image = np.array(Image.open(image_path).convert("HSV"), dtype=float)
 
   
-  def apply_kuwahara_filter(self, filter_dimension):
+  def apply_kuwahara_filter(self, filter_dimension, result_path):
     image_width, image_height, image_channel = self.HSV_image.shape
     padding_value = filter_dimension // 2
     for row in range(padding_value, image_width - padding_value):
@@ -19,7 +16,7 @@ class KuwaharaFilter:
         image_part = self.HSV_image[row - padding_value: row + padding_value + 1, column - padding_value: column + padding_value + 1, 2]
         self.filter_operation(image_part, row, column)
 
-    Image.fromarray(self.RGB_image.astype(np.uint8)).show()
+    Image.fromarray(self.RGB_image.astype(np.uint8)).save(result_path)
 
 
   def filter_operation(self, image_part, row, column):
@@ -48,5 +45,7 @@ class KuwaharaFilter:
     self.RGB_image[row][column][1] = np.mean(self.RGB_image[row_start : row_end, column_start : column_end, 1])
     self.RGB_image[row][column][2] = np.mean(self.RGB_image[row_start : row_end, column_start : column_end, 2])
 
-kuwahara = KuwaharaFilter(IMAGE_PATH)
-kuwahara.apply_kuwahara_filter(3)
+for img in range(5):
+  kuwahara = KuwaharaFilter( getcwd() + "\\src\\images\\img" + str(img) + ".jpg")
+  for kernel_dimension in [3, 5, 7, 9]:
+    kuwahara.apply_kuwahara_filter(5, getcwd() + "\\src\\kuwahara_results\\img" + str(img) + "_" + str(kernel_dimension) + ".jpg")

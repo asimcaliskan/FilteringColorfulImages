@@ -2,22 +2,23 @@ from PIL import Image
 import numpy as np
 from os import getcwd
 
-IMAGE_PATH = getcwd() + "\\src\\images\\apples.jpg"
-FILTER_SIZE = 3 #It can be 3, 5, 7, 9
-PADDING_VALUE = FILTER_SIZE // 2 #PLEASE DON'T CHANGE IT!
+class MeanFilter:
+  def __init__(self, image_path):
+    self.image = np.array(Image.open(image_path), dtype=float)
 
-input_image = Image.open(IMAGE_PATH)
-input_image = np.array(input_image)
-input_image = np.pad(input_image, pad_width=[(PADDING_VALUE, PADDING_VALUE), (PADDING_VALUE, PADDING_VALUE), (0, 0)], mode="constant")
+  def apply_mean_filter(self, filter_dimension, result_path):
+    image_width, image_height, image_channel = self.image.shape
+    padding_value = filter_dimension // 2
+    for row in range(padding_value, image_width - padding_value):
+      for column in range(padding_value, image_height - padding_value):
+        for channel in range(image_channel):
+          image_part = self.image[row - padding_value: row + padding_value + 1, column - padding_value: column + padding_value + 1, channel]
+          self.image[row][column][channel] = np.mean(image_part)
+   
+    Image.fromarray(self.image.astype(np.uint8)).save(result_path)
 
-def mean_filter(image):
-  width, height, channels = image.shape
-  for row in range(PADDING_VALUE, height - PADDING_VALUE):
-    for column in range(PADDING_VALUE, width - PADDING_VALUE):
-      mean_of_3_channel = np.mean(image[row - PADDING_VALUE : row + PADDING_VALUE + 1, column - PADDING_VALUE : column + PADDING_VALUE + 1], axis=(0, 1)) 
-      image[row - PADDING_VALUE : row + PADDING_VALUE + 1, column - PADDING_VALUE : column + PADDING_VALUE + 1] = mean_of_3_channel
+for img in range(5):
+  kuwahara = MeanFilter( getcwd() + "\\src\\images\\img" + str(img) + ".jpg")
+  for kernel_dimension in [3, 5, 7, 9]:
+    kuwahara.apply_mean_filter(5, getcwd() + "\\src\\mean_results\\img" + str(img) + "_" + str(kernel_dimension) + ".jpg")
 
-mean_filter(input_image)
-width, height, channels = input_image.shape
-result_image = Image.fromarray(input_image[PADDING_VALUE: width - PADDING_VALUE, PADDING_VALUE: height - PADDING_VALUE])
-result_image.show()
